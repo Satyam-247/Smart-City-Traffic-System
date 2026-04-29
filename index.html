@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Smart City Traffic Signal Optimization</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="app">
+    <section class="simulator-screen" aria-label="Traffic signal optimizer">
+      <header class="topbar">
+        <div class="brand-lockup" aria-label="Smart City Traffic Optimizer">
+          <span class="signal-mark" aria-hidden="true">
+            <span class="mark-light red"></span>
+            <span class="mark-light amber"></span>
+            <span class="mark-light green"></span>
+          </span>
+          <div>
+            <h1>Smart City Traffic Optimizer</h1>
+            <p>Greedy scheduling with priority queue signal control</p>
+          </div>
+        </div>
+        <time id="clock" class="clock" datetime=""></time>
+      </header>
+
+      <div class="workbench">
+        <aside class="control-panel" aria-label="Traffic controls">
+          <form id="trafficForm">
+            <label class="input-block" for="vehicleInput">
+              <span>Vehicles</span>
+              <input id="vehicleInput" name="vehicleInput" type="text" inputmode="numeric" value="16, 8, 11, 5" autocomplete="off">
+            </label>
+
+            <div class="lane-grid" aria-label="Lane vehicle counts">
+              <label>
+                <span>Lane 0 North</span>
+                <input class="lane-count" data-lane="0" type="number" min="0" max="240" value="16">
+              </label>
+              <label>
+                <span>Lane 1 East</span>
+                <input class="lane-count" data-lane="1" type="number" min="0" max="240" value="8">
+              </label>
+              <label>
+                <span>Lane 2 South</span>
+                <input class="lane-count" data-lane="2" type="number" min="0" max="240" value="11">
+              </label>
+              <label>
+                <span>Lane 3 West</span>
+                <input class="lane-count" data-lane="3" type="number" min="0" max="240" value="5">
+              </label>
+            </div>
+
+            <div class="button-row">
+              <button id="runButton" class="primary-action" type="submit">
+                <span class="button-symbol" aria-hidden="true"></span>
+                Run
+              </button>
+              <button id="pauseButton" type="button">
+                <span class="pause-symbol" aria-hidden="true"></span>
+                Pause
+              </button>
+            </div>
+
+            <div class="emergency-controls" aria-label="Emergency settings">
+              <label for="emergencyLane">
+                <span>Emergency lane</span>
+                <select id="emergencyLane">
+                  <option value="0">Lane 0 North</option>
+                  <option value="1">Lane 1 East</option>
+                  <option value="2">Lane 2 South</option>
+                  <option value="3">Lane 3 West</option>
+                </select>
+              </label>
+
+              <label for="emergencyType">
+                <span>Emergency type</span>
+                <select id="emergencyType">
+                  <option value="ambulance">Ambulance</option>
+                  <option value="fire">Fire truck</option>
+                  <option value="police">Police</option>
+                </select>
+              </label>
+
+              <button id="emergencyButton" class="danger-action" type="button">
+                <span class="emergency-symbol" aria-hidden="true"></span>
+                Emergency
+              </button>
+            </div>
+
+            <label class="speed-control" for="speedRange">
+              <span>Speed</span>
+              <input id="speedRange" type="range" min="0.7" max="2.4" value="1.15" step="0.05">
+            </label>
+          </form>
+        </aside>
+
+        <section class="scene-stage" aria-label="3D road simulation">
+          <canvas id="trafficCanvas"></canvas>
+          <div class="hud" aria-live="polite">
+            <div>
+              <span class="hud-label">Signal</span>
+              <strong id="signalStatus">Ready</strong>
+            </div>
+            <div>
+              <span class="hud-label">Visible vehicles</span>
+              <strong id="visibleCount">40 / 40</strong>
+            </div>
+            <div>
+              <span class="hud-label">Mode</span>
+              <strong id="modeStatus">Normal</strong>
+            </div>
+          </div>
+        </section>
+      </div>
+    </section>
+
+    <section class="dashboard-band" aria-label="Optimization metrics">
+      <div class="section-heading">
+        <p>Traffic analytics</p>
+        <h2>Signal order, complexity, and live totals</h2>
+      </div>
+
+      <div class="metrics-grid">
+        <article class="metric-card">
+          <span>Total vehicles</span>
+          <strong id="totalVehicles">40</strong>
+        </article>
+        <article class="metric-card">
+          <span>Signal cycles</span>
+          <strong id="cycleCount">5</strong>
+        </article>
+        <article class="metric-card">
+          <span>Greedy ops</span>
+          <strong id="greedyOps">8</strong>
+        </article>
+        <article class="metric-card">
+          <span>DP ops</span>
+          <strong id="dpOps">16</strong>
+        </article>
+      </div>
+
+      <div class="analysis-layout">
+        <section class="output-panel" aria-label="System output">
+          <h3>System output</h3>
+          <pre id="systemOutput"></pre>
+        </section>
+
+        <section class="chart-panel" aria-label="Complexity chart">
+          <h3>Complexity comparison</h3>
+          <div class="bar-chart" aria-hidden="true">
+            <div class="bar-column">
+              <span id="greedyBar" class="bar greedy"></span>
+              <small>Greedy</small>
+            </div>
+            <div class="bar-column">
+              <span id="pqBar" class="bar queue"></span>
+              <small>Priority queue</small>
+            </div>
+            <div class="bar-column">
+              <span id="dpBar" class="bar dp"></span>
+              <small>DP</small>
+            </div>
+          </div>
+        </section>
+      </div>
+    </section>
+
+    <section class="dashboard-band schedule-section" aria-label="Signal processing order">
+      <div class="section-heading">
+        <p>Optimized schedule</p>
+        <h2>Lane priority sequence</h2>
+      </div>
+      <div id="scheduleList" class="schedule-list"></div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
